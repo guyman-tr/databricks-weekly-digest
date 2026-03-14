@@ -1,0 +1,12 @@
+.env
+output/
+__pycache__/
+*.pyc
+*.pyo
+*.wav
+*.mp3
+.venv/
+venv/
+node_modules/
+.next/
+web/out/

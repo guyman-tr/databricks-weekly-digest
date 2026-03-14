@@ -1,0 +1,65 @@
+digest:
+  name: "Databricks Weekly Digest"
+  lookback_days: 7
+
+sources:
+  databricks_blog:
+    enabled: true
+    rss_url: "https://www.databricks.com/feed"
+    max_items: 15
+
+  databricks_releases:
+    enabled: true
+    rss_url: "https://docs.databricks.com/en/assets/files/feed.xml"
+    max_items: 10
+
+  youtube:
+    enabled: true
+    max_items_per_channel: 5
+    channels:
+      - name: "Databricks"
+        channel_id: "UC3q8O3Bh2z7dQZ6UeenQOw"
+      - name: "AdvancingAnalytics"
+        channel_id: "UCIbsBVLKOAPBnmLGCPfBDXA"
+      - name: "Seattle Data Guy"
+        channel_id: "UCmLGJ3VYBcfRaWbP6JLJcpA"
+      - name: "Mr. Fugu Data Science"
+        channel_id: "UCKgB3kdetbkN1qWdA0ZFPzA"
+      - name: "Kahan Data Solutions"
+        channel_id: "UCuW9n7JhBJaYBN1gKq-B7_A"
+
+podcast:
+  hosts:
+    host1:
+      name: "Amir"
+      voice: "Kore"
+      role: "The knowledgeable host who explains developments clearly"
+    host2:
+      name: "Dana"
+      voice: "Puck"
+      role: "The curious co-host who asks sharp questions and connects dots"
+  target_words: 1800
+  tts_model: "gemini-2.5-flash-preview-tts"
+
+summarizer:
+  model: "gemini-2.5-flash"
+  max_digest_items: 7
+
+distribution:
+  email:
+    enabled: false
+    method: "gmail"  # or "logic_app"
+    gmail_user: ""
+    gmail_app_password: ""
+    recipients: []
+    logic_app_url: ""
+
+  teams:
+    enabled: false
+    webhook_url: ""
+
+  confluence:
+    enabled: false
+    cloud_id: ""
+    space_id: ""
+    parent_page_id: ""
