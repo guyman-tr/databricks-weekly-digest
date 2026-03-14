@@ -13,6 +13,12 @@ sources:
     rss_url: "https://docs.databricks.com/en/assets/files/feed.xml"
     max_items: 10
 
+  databricks_roadmap:
+    enabled: true
+    release_rss: "https://docs.databricks.com/en/assets/files/feed.xml"
+    urls: []
+    max_items: 10
+
   youtube:
     enabled: true
     max_items_per_channel: 5
@@ -27,6 +33,27 @@ sources:
         channel_id: "UCKgB3kdetbkN1qWdA0ZFPzA"
       - name: "Kahan Data Solutions"
         channel_id: "UCuW9n7JhBJaYBN1gKq-B7_A"
+
+tracks:
+  data_engineering:
+    name: "Data Engineering"
+    slug: "de"
+    focus: >
+      Delta Lake, Apache Spark, Workflows, Jobs, DLT (Delta Live Tables),
+      Unity Catalog governance, dbt integration, data pipelines, ETL/ELT,
+      data ingestion, lakehouse architecture, streaming (Structured Streaming,
+      Kafka), orchestration, data quality, compute clusters, infrastructure
+    podcast_intro: "the data engineering side of Databricks"
+
+  analytics:
+    name: "Analytics & Data Science"
+    slug: "analytics"
+    focus: >
+      SQL Analytics, Databricks SQL, Dashboards, Genie, AI/BI,
+      Machine Learning, MLflow, Mosaic AI, Model Serving, Feature Store,
+      GenAI, LLMs, notebooks, data science, exploratory analysis,
+      visualization, AutoML, vector search, RAG, agents
+    podcast_intro: "analytics, ML, and data science on Databricks"
 
 podcast:
   hosts:

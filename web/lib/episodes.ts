@@ -1,15 +1,9 @@
 import fs from "fs";
 import path from "path";
+import { TRACKS, type TrackSlug, type TrackData, type Episode } from "./types";
 
-export interface Episode {
-  date: string;
-  title: string;
-  description: string;
-  audioFile: string | null;
-  itemCount: number;
-  digestMarkdown: string;
-  hasAudio: boolean;
-}
+export type { TrackSlug, TrackData, Episode };
+export { TRACKS, formatDate } from "./types";
 
 const EPISODES_DIR = path.join(process.cwd(), "public", "episodes");
 
@@ -31,26 +25,53 @@ export function getEpisode(date: string): Episode | null {
   if (!fs.existsSync(episodeDir)) return null;
 
   const metaPath = path.join(episodeDir, "meta.json");
-  const digestPath = path.join(episodeDir, "digest.md");
-
   const meta = fs.existsSync(metaPath)
     ? JSON.parse(fs.readFileSync(metaPath, "utf-8"))
     : {};
 
-  const digestMarkdown = fs.existsSync(digestPath)
-    ? fs.readFileSync(digestPath, "utf-8")
-    : "";
+  const tracks: Partial<Record<TrackSlug, TrackData>> = {};
 
-  const audioFile = findAudioFile(episodeDir);
+  for (const track of TRACKS) {
+    const digestPath = path.join(episodeDir, `digest-${track.slug}.md`);
+    if (fs.existsSync(digestPath)) {
+      const audioFile = findTrackAudio(episodeDir, track.slug);
+      const trackMeta = meta.tracks?.[track.slug] || {};
+
+      tracks[track.slug] = {
+        slug: track.slug,
+        name: trackMeta.name || track.name,
+        digestMarkdown: fs.readFileSync(digestPath, "utf-8"),
+        audioFile: audioFile ? `/episodes/${date}/${audioFile}` : null,
+        hasAudio: !!audioFile,
+        itemCount: trackMeta.itemCount || 0,
+        description: trackMeta.description || "",
+      };
+    }
+  }
+
+  // Backward compat: legacy digest.md (no track suffix) maps to "de"
+  if (Object.keys(tracks).length === 0) {
+    const legacyDigest = path.join(episodeDir, "digest.md");
+    if (fs.existsSync(legacyDigest)) {
+      const audioFile = findLegacyAudio(episodeDir);
+      tracks.de = {
+        slug: "de",
+        name: "Data Engineering",
+        digestMarkdown: fs.readFileSync(legacyDigest, "utf-8"),
+        audioFile: audioFile ? `/episodes/${date}/${audioFile}` : null,
+        hasAudio: !!audioFile,
+        itemCount: meta.itemCount || 0,
+        description: meta.description || "",
+      };
+    }
+  }
+
+  if (Object.keys(tracks).length === 0) return null;
 
   return {
     date,
-    title: meta.title || `Databricks Weekly - ${formatDate(date)}`,
-    description: meta.description || "",
-    audioFile: audioFile ? `/episodes/${date}/${audioFile}` : null,
-    itemCount: meta.itemCount || 0,
-    digestMarkdown,
-    hasAudio: !!audioFile,
+    title: meta.title || `Databricks Weekly - ${date}`,
+    tracks,
   };
 }
 
@@ -66,21 +87,22 @@ export function getLatestEpisode(): Episode | null {
   return getEpisode(dates[0]);
 }
 
-function findAudioFile(dir: string): string | null {
-  const audioExtensions = [".mp3", ".wav", ".ogg"];
+function findTrackAudio(dir: string, slug: string): string | null {
+  const exts = [".mp3", ".wav", ".ogg"];
   const files = fs.readdirSync(dir);
-  for (const ext of audioExtensions) {
-    const match = files.find((f) => f.endsWith(ext));
-    if (match) return match;
+  for (const ext of exts) {
+    const target = `podcast-${slug}${ext}`;
+    if (files.includes(target)) return target;
   }
   return null;
 }
 
-export function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+function findLegacyAudio(dir: string): string | null {
+  const exts = [".mp3", ".wav", ".ogg"];
+  const files = fs.readdirSync(dir);
+  for (const ext of exts) {
+    const match = files.find((f) => f === `podcast${ext}`);
+    if (match) return match;
+  }
+  return null;
 }

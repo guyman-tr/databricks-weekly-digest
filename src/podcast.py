@@ -4,20 +4,21 @@ from google import genai
 from google.genai import types
 
 
-DIALOGUE_PROMPT = """You are a scriptwriter for a weekly Databricks podcast called "Databricks Weekly".
-Two hosts discuss the week's most important Databricks developments.
+DIALOGUE_PROMPT = """You are a scriptwriter for a weekly Databricks podcast called "Databricks Weekly{track_suffix}".
+Two hosts discuss the week's most important {track_intro} developments.
 
 HOSTS:
 - {host1_name}: {host1_role}
 - {host2_name}: {host2_role}
 
 RULES:
+- This episode covers {track_intro}
 - Write a natural, conversational dialogue -- NOT a formal news broadcast
 - {host1_name} tends to explain the technical significance of things
-- {host2_name} asks the questions a real data engineer would ask: "Can we use this today?", "Does this replace X?", "What does this mean for our migration?"
+- {host2_name} asks the questions a real practitioner would ask: "Can we use this today?", "Does this replace X?", "What does this mean for our migration?"
 - Include natural reactions: "Oh that's actually huge", "Wait, really?", "OK so basically..."
 - Don't cover everything -- pick the 4-5 most interesting topics and go deeper
-- Start with a quick intro, end with a brief sign-off
+- Start with a quick intro mentioning this is the {track_intro} edition, end with a brief sign-off
 - Target approximately {target_words} words
 - Format each line as: SpeakerName: dialogue text
 
@@ -56,18 +57,26 @@ class PodcastGenerator:
         self.text_model = text_model
         self.target_words = target_words
 
-    def generate(self, digest: str, output_dir: Path) -> dict:
+    def generate(
+        self,
+        digest: str,
+        output_dir: Path,
+        file_suffix: str = "",
+        track_name: str = "",
+        track_intro: str = "the latest Databricks developments",
+    ) -> dict:
         output_dir.mkdir(parents=True, exist_ok=True)
+        label = track_name or "General"
 
-        print("  Generating podcast dialogue...")
-        dialogue = self._generate_dialogue(digest)
-        dialogue_path = output_dir / "podcast_script.txt"
+        print(f"  [{label}] Generating podcast dialogue...")
+        dialogue = self._generate_dialogue(digest, track_name, track_intro)
+        dialogue_path = output_dir / f"podcast_script{file_suffix}.txt"
         dialogue_path.write_text(dialogue, encoding="utf-8")
-        print(f"  Script saved ({len(dialogue.split())} words)")
+        print(f"  [{label}] Script saved ({len(dialogue.split())} words)")
 
-        print("  Rendering audio with Gemini TTS...")
-        audio_path = self._render_audio(dialogue, output_dir)
-        print(f"  Audio saved: {audio_path}")
+        print(f"  [{label}] Rendering audio with Gemini TTS...")
+        audio_path = self._render_audio(dialogue, output_dir, file_suffix)
+        print(f"  [{label}] Audio saved: {audio_path}")
 
         return {
             "dialogue_path": str(dialogue_path),
@@ -75,8 +84,14 @@ class PodcastGenerator:
             "word_count": len(dialogue.split()),
         }
 
-    def _generate_dialogue(self, digest: str) -> str:
+    def _generate_dialogue(
+        self, digest: str, track_name: str, track_intro: str,
+    ) -> str:
+        track_suffix = f": {track_name}" if track_name else ""
+
         prompt = DIALOGUE_PROMPT.format(
+            track_suffix=track_suffix,
+            track_intro=track_intro,
             host1_name=self.host1_name,
             host1_role=self.host1_role,
             host2_name=self.host2_name,
@@ -96,22 +111,16 @@ class PodcastGenerator:
 
         return response.text
 
-    def _render_audio(self, dialogue: str, output_dir: Path) -> Path:
-        """Render dialogue to audio using Gemini multi-speaker TTS.
-
-        The TTS model has a 32k token context window (~8000 words).
-        Weekly digests are typically 1500-2000 words, well within limits.
-        If the dialogue exceeds the limit, it's chunked and stitched.
-        """
+    def _render_audio(self, dialogue: str, output_dir: Path, file_suffix: str = "") -> Path:
         word_count = len(dialogue.split())
-        chunk_limit = 6000  # words per TTS call, conservative
+        chunk_limit = 6000
 
         if word_count <= chunk_limit:
             audio_data = self._tts_call(dialogue)
         else:
             audio_data = self._tts_chunked(dialogue, chunk_limit)
 
-        audio_path = output_dir / "podcast.wav"
+        audio_path = output_dir / f"podcast{file_suffix}.wav"
         self._save_wav(audio_path, audio_data)
         return audio_path
 
@@ -151,10 +160,9 @@ class PodcastGenerator:
         return response.candidates[0].content.parts[0].inline_data.data
 
     def _tts_chunked(self, dialogue: str, chunk_limit: int) -> bytes:
-        """Split dialogue at speaker boundaries and render each chunk."""
         lines = dialogue.split("\n")
-        chunks = []
-        current_chunk = []
+        chunks: list[str] = []
+        current_chunk: list[str] = []
         current_words = 0
 
         for line in lines:

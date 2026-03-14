@@ -1,7 +1,7 @@
 """
 Publish a digest episode to the website.
 
-Copies digest + audio from output/ to web/public/episodes/
+Copies track-specific digests + audio from output/ to web/public/episodes/
 and creates the meta.json needed by the website.
 
 Usage:
@@ -14,6 +14,9 @@ import json
 import re
 import shutil
 from pathlib import Path
+
+TRACK_SLUGS = ["de", "analytics"]
+TRACK_NAMES = {"de": "Data Engineering", "analytics": "Analytics & Data Science"}
 
 
 def find_latest_output() -> Path | None:
@@ -28,7 +31,6 @@ def find_latest_output() -> Path | None:
 
 
 def extract_description(digest_path: Path) -> str:
-    """Pull a one-line description from the digest's 'Big Ones' or 'What's New' section titles."""
     text = digest_path.read_text(encoding="utf-8")
     topics = []
     for line in text.split("\n"):
@@ -50,28 +52,46 @@ def publish(source_dir: Path):
     target_dir = Path(__file__).parent / "web" / "public" / "episodes" / date
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    digest_src = source_dir / "digest.md"
-    if digest_src.exists():
-        shutil.copy2(digest_src, target_dir / "digest.md")
-        print(f"  Copied digest.md")
+    tracks_meta: dict = {}
 
-    for ext in (".wav", ".mp3", ".ogg"):
-        audio_src = source_dir / f"podcast{ext}"
-        if audio_src.exists():
-            shutil.copy2(audio_src, target_dir / f"podcast{ext}")
-            print(f"  Copied podcast{ext} ({audio_src.stat().st_size / 1024 / 1024:.1f} MB)")
-            break
+    for slug in TRACK_SLUGS:
+        digest_src = source_dir / f"digest-{slug}.md"
+        if not digest_src.exists():
+            continue
 
-    script_src = source_dir / "podcast_script.txt"
-    if script_src.exists():
-        shutil.copy2(script_src, target_dir / "podcast_script.txt")
-        print(f"  Copied podcast_script.txt")
+        shutil.copy2(digest_src, target_dir / f"digest-{slug}.md")
+        print(f"  [{slug}] Copied digest-{slug}.md")
+
+        for ext in (".wav", ".mp3", ".ogg"):
+            audio_src = source_dir / f"podcast-{slug}{ext}"
+            if audio_src.exists():
+                shutil.copy2(audio_src, target_dir / f"podcast-{slug}{ext}")
+                size_mb = audio_src.stat().st_size / 1024 / 1024
+                print(f"  [{slug}] Copied podcast-{slug}{ext} ({size_mb:.1f} MB)")
+                break
+
+        script_src = source_dir / f"podcast_script-{slug}.txt"
+        if script_src.exists():
+            shutil.copy2(script_src, target_dir / f"podcast_script-{slug}.txt")
+            print(f"  [{slug}] Copied podcast_script-{slug}.txt")
+
+        tracks_meta[slug] = {
+            "name": TRACK_NAMES.get(slug, slug),
+            "itemCount": count_items(digest_src),
+            "description": extract_description(digest_src),
+        }
+
+    # Backward compat: also copy legacy digest.md if present and no track files
+    if not tracks_meta:
+        legacy_digest = source_dir / "digest.md"
+        if legacy_digest.exists():
+            shutil.copy2(legacy_digest, target_dir / "digest.md")
+            print("  Copied legacy digest.md")
 
     meta = {
         "title": f"Databricks Weekly - {date}",
         "date": date,
-        "description": extract_description(digest_src) if digest_src.exists() else "",
-        "itemCount": count_items(digest_src) if digest_src.exists() else 0,
+        "tracks": tracks_meta,
     }
     meta_path = target_dir / "meta.json"
     meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")

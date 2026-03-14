@@ -1,7 +1,5 @@
-import { getAllEpisodes, formatDate } from "@/lib/episodes";
-import { parseDigest, groupByCategory } from "@/lib/parser";
-import AudioPlayer from "@/components/AudioPlayer";
-import TopicSection from "@/components/TopicSection";
+import { getAllEpisodes } from "@/lib/episodes";
+import EpisodeList from "@/components/EpisodeList";
 
 export default function Home() {
   const allEpisodes = getAllEpisodes();
@@ -25,46 +23,5 @@ export default function Home() {
     );
   }
 
-  return (
-    <div className="max-w-3xl mx-auto px-6 py-10 space-y-16">
-      {allEpisodes.map((episode) => {
-        const parsed = parseDigest(episode.digestMarkdown);
-        const groups = groupByCategory(parsed.topics);
-
-        return (
-          <article key={episode.date} className="space-y-6">
-            {/* Date header */}
-            <section className="space-y-1">
-              <p className="text-brand-orange text-xs font-semibold tracking-widest uppercase">
-                Episode
-              </p>
-              <h2 className="text-2xl font-bold text-white">
-                {parsed.dateRange || formatDate(episode.date)}
-              </h2>
-              <p className="text-sm text-brand-muted">
-                {parsed.topics.length} topics covered
-              </p>
-            </section>
-
-            {/* Audio Player */}
-            {episode.hasAudio && episode.audioFile && (
-              <AudioPlayer src={episode.audioFile} title={episode.title} />
-            )}
-
-            {/* Topic Sections (expandable topic cards) */}
-            <div className="space-y-8">
-              {groups.map((group) => (
-                <TopicSection
-                  key={`${episode.date}-${group.category}`}
-                  label={group.label}
-                  category={group.category}
-                  topics={group.topics}
-                />
-              ))}
-            </div>
-          </article>
-        );
-      })}
-    </div>
-  );
+  return <EpisodeList episodes={allEpisodes} />;
 }

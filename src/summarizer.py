@@ -3,29 +3,40 @@ from google.genai import types
 from .models import ContentItem
 
 
-DIGEST_PROMPT = """You are a senior Databricks platform engineer creating a weekly digest for your data engineering team.
+TRACK_DIGEST_PROMPT = """You are a senior Databricks platform engineer creating a weekly digest.
+This digest is for the **{track_name}** audience.
 
-Below is raw content collected this week from the Databricks blog, YouTube channels, and release notes.
-Create a structured digest with the {max_items} most important items.
+TRACK FOCUS: {track_focus}
+
+Below is raw content collected this week from the Databricks blog, YouTube channels, release notes,
+and roadmap/preview announcements.
+Select the {max_items} most relevant items for {track_name} practitioners.
 
 RULES:
-- Focus on things that MATTER to a data engineering team: new features they can use, breaking changes, performance improvements, best practices
-- Skip marketing fluff, customer stories, and executive interviews unless they contain real technical substance
-- For each item, explain WHY it matters to the team, not just WHAT it is
+- ONLY include items relevant to {track_name}: {track_focus}
+- Skip items that clearly belong to a different audience
+- Items touching multiple areas should be analyzed from the {track_name} perspective
+- For preview/roadmap items (source_type = "roadmap"), note they are in preview
+- Explain WHY each item matters to {track_name} practitioners specifically
 - Be opinionated -- if something is a big deal, say so
-- Group related items together (e.g., multiple Unity Catalog updates become one item)
+- Group related items together
 
 OUTPUT FORMAT (markdown):
-# Databricks Weekly Digest - {date_range}
+# Databricks Weekly: {track_name} - {date_range}
 
 ## The Big Ones
-[1-2 items that are genuinely important this week, if any exist. Skip this section if nothing stands out.]
+[1-2 items that are genuinely important this week for {track_name}, if any exist. Skip this section if nothing stands out.]
 
 ## What's New
-[3-5 items covering new features, releases, announcements]
+[3-5 items covering new features, releases, announcements relevant to {track_name}]
 
 ## Worth Knowing
 [1-3 items that are useful but not urgent -- tips, community content, minor updates]
+
+For each item use this structure:
+### N. **Item Title**
+**Source:** [Source Name](URL)
+**Why it matters:** Clear explanation of impact for {track_name} practitioners.
 
 ## Raw Sources
 [Bulleted list of all source URLs for reference]
@@ -43,9 +54,16 @@ class Summarizer:
         self.client = genai.Client(api_key=api_key)
         self.model = model
 
-    def summarize(self, items: list[ContentItem], max_items: int = 7) -> str:
+    def summarize(
+        self,
+        items: list[ContentItem],
+        max_items: int = 7,
+        track_name: str | None = None,
+        track_focus: str | None = None,
+    ) -> str:
         if not items:
-            return "# Databricks Weekly Digest\n\nNo new content found this week."
+            label = track_name or "General"
+            return f"# Databricks Weekly: {label}\n\nNo new content found this week."
 
         content_block = self._format_items(items)
 
@@ -54,13 +72,16 @@ class Summarizer:
         start = end - timedelta(days=7)
         date_range = f"{start.strftime('%b %d')} - {end.strftime('%b %d, %Y')}"
 
-        prompt = DIGEST_PROMPT.format(
+        prompt = TRACK_DIGEST_PROMPT.format(
+            track_name=track_name or "General",
+            track_focus=track_focus or "all Databricks developments",
             max_items=max_items,
             date_range=date_range,
             content=content_block,
         )
 
-        print(f"  Summarizing {len(items)} items with {self.model}...")
+        label = track_name or "General"
+        print(f"  [{label}] Summarizing {len(items)} items with {self.model}...")
 
         response = self.client.models.generate_content(
             model=self.model,
@@ -72,7 +93,7 @@ class Summarizer:
         )
 
         digest = response.text
-        print(f"  Digest generated ({len(digest)} chars)")
+        print(f"  [{label}] Digest generated ({len(digest)} chars)")
         return digest
 
     @staticmethod
@@ -85,6 +106,7 @@ Source: {item.source}
 Title: {item.title}
 URL: {item.url}
 Date: {item.published.strftime('%Y-%m-%d')}
+Tags: {', '.join(item.tags) if item.tags else 'none'}
 Summary: {item.summary}
 Content: {item.full_text[:2000]}
 """
