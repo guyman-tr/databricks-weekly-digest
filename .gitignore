@@ -1,4 +1,5 @@
 .env
+.env.local
 output/
 __pycache__/
 *.pyc
