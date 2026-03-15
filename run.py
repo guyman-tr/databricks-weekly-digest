@@ -194,9 +194,9 @@ def main():
     for track_cfg in tracks:
         slug = track_cfg["slug"]
         name = track_cfg["name"]
-        print(f"\n{'─' * 40}")
+        print(f"\n{'-' * 40}")
         print(f"TRACK: {name}")
-        print(f"{'─' * 40}")
+        print(f"{'-' * 40}")
 
         print(f"\n[2/{name}] Generating digest...")
         digest = summarize_track(items, config, api_key, track_cfg)

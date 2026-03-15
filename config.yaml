@@ -59,11 +59,11 @@ podcast:
   hosts:
     host1:
       name: "Amir"
-      voice: "Kore"
+      voice: "Charon"
       role: "The knowledgeable host who explains developments clearly"
     host2:
       name: "Dana"
-      voice: "Puck"
+      voice: "Aoede"
       role: "The curious co-host who asks sharp questions and connects dots"
   target_words: 1800
   tts_model: "gemini-2.5-flash-preview-tts"

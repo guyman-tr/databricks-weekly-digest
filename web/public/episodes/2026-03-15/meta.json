@@ -1,0 +1,16 @@
+{
+  "title": "Databricks Weekly - 2026-03-15",
+  "date": "2026-03-15",
+  "tracks": {
+    "de": {
+      "name": "Data Engineering",
+      "itemCount": 3,
+      "description": "Serverless Workspaces in Azure Databricks is now Generally Available, The Evolution of Data Engineering: How Serverless Compute is Transforming Notebooks, Lakeflow Jobs, and Spark Declarative Pipelines, Beyond Provisioning: The Developer\u2019s Guide to Databricks Lakebase Autoscaling"
+    },
+    "analytics": {
+      "name": "Analytics & Data Science",
+      "itemCount": 3,
+      "description": "Databricks acquires Quotient AI to power AI agent evaluations, Introducing Genie Code, Mitigating The Risk of Prompt Injection for AI Agents on Databricks"
+    }
+  }
+}
