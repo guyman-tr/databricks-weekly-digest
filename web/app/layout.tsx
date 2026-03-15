@@ -5,6 +5,10 @@ import Header from "@/components/Header";
 export const metadata: Metadata = {
   title: "Databricks Weekly",
   description: "Weekly digest and podcast covering the latest Databricks developments",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
