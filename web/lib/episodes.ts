@@ -34,14 +34,18 @@ export function getEpisode(date: string): Episode | null {
   for (const track of TRACKS) {
     const digestPath = path.join(episodeDir, `digest-${track.slug}.md`);
     if (fs.existsSync(digestPath)) {
-      const audioFile = findTrackAudio(episodeDir, track.slug);
       const trackMeta = meta.tracks?.[track.slug] || {};
+
+      // Prefer R2 URL from meta.json, fall back to local file
+      const r2Url: string | undefined = trackMeta.audioUrl;
+      const localAudio = findTrackAudio(episodeDir, track.slug);
+      const audioFile = r2Url || (localAudio ? `/episodes/${date}/${localAudio}` : null);
 
       tracks[track.slug] = {
         slug: track.slug,
         name: trackMeta.name || track.name,
         digestMarkdown: fs.readFileSync(digestPath, "utf-8"),
-        audioFile: audioFile ? `/episodes/${date}/${audioFile}` : null,
+        audioFile,
         hasAudio: !!audioFile,
         itemCount: trackMeta.itemCount || 0,
         description: trackMeta.description || "",
@@ -53,12 +57,13 @@ export function getEpisode(date: string): Episode | null {
   if (Object.keys(tracks).length === 0) {
     const legacyDigest = path.join(episodeDir, "digest.md");
     if (fs.existsSync(legacyDigest)) {
-      const audioFile = findLegacyAudio(episodeDir);
+      const localAudio = findLegacyAudio(episodeDir);
+      const audioFile = localAudio ? `/episodes/${date}/${localAudio}` : null;
       tracks.de = {
         slug: "de",
         name: "Data Engineering",
         digestMarkdown: fs.readFileSync(legacyDigest, "utf-8"),
-        audioFile: audioFile ? `/episodes/${date}/${audioFile}` : null,
+        audioFile,
         hasAudio: !!audioFile,
         itemCount: meta.itemCount || 0,
         description: meta.description || "",

@@ -5,8 +5,6 @@ __pycache__/
 *.pyo
 *.wav
 *.mp3
-!web/public/episodes/**/*.wav
-!web/public/episodes/**/*.mp3
 .venv/
 venv/
 node_modules/
