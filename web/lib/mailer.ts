@@ -17,7 +17,10 @@ function getBaseUrl(): string {
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   }
-  return "http://localhost:3000";
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "https://databricks-weekly-digest-guyman-2003s-projects.vercel.app";
 }
 
 export async function sendConfirmationEmail(
