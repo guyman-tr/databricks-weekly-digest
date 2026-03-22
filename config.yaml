@@ -1,6 +1,6 @@
 digest:
-  name: "Databricks Monthly Digest"
-  lookback_days: 30
+  name: "Databricks Weekly Digest"
+  lookback_days: 7
 
 sources:
   databricks_blog:
