@@ -25,7 +25,17 @@ load_dotenv()
 def load_config() -> dict:
     config_path = Path(__file__).parent / "config.yaml"
     with open(config_path, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        config = yaml.safe_load(f)
+
+    email = config["distribution"]["email"]
+    if os.getenv("EMAIL_ENABLED", "").lower() == "true":
+        email["enabled"] = True
+    if os.getenv("SMTP_USER"):
+        email["gmail_user"] = os.getenv("SMTP_USER")
+    if os.getenv("SMTP_PASS"):
+        email["gmail_app_password"] = os.getenv("SMTP_PASS")
+
+    return config
 
 
 def aggregate(config: dict) -> list:
