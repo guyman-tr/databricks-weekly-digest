@@ -110,14 +110,14 @@ def generate_podcast_track(
     )
 
 
-def distribute(digest: str, podcast_result: dict | None, config: dict):
+def distribute(digest: str, podcast_result: dict | None, config: dict, date_str: str):
     dist = config["distribution"]
 
     if dist["email"]["enabled"]:
         from src.distribution import EmailSender
         sender = EmailSender(dist["email"])
         subject = f"Databricks Weekly Digest - {datetime.now().strftime('%b %d, %Y')}"
-        sender.send(subject, digest)
+        sender.send(subject, date_str)
 
     if dist["teams"]["enabled"]:
         from src.distribution import TeamsSender
@@ -236,7 +236,7 @@ def main():
         combined = "\n\n---\n\n".join(
             r["digest"] for r in all_results.values()
         )
-        distribute(combined, None, config)
+        distribute(combined, None, config, date_str)
     else:
         print("\n[4] Distribution skipped")
 

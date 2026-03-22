@@ -3,9 +3,6 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
-from pathlib import Path
 
 import boto3
 
@@ -60,29 +57,51 @@ class EmailSender:
         all_emails = set(static_recipients) | set(r2_subscribers)
         self.recipients = [e for e in all_emails if e]
 
-    def send(self, subject: str, body_html: str, attachments: list[Path] | None = None):
+    def send(self, subject: str, episode_date: str):
+        if not self.recipients:
+            print("  No recipients to send to, skipping email")
+            return
+
+        site_url = os.environ.get(
+            "SITE_URL",
+            "https://databricks-weekly-digest-guyman-2003s-projects.vercel.app",
+        )
+        episode_url = f"{site_url}?episode={episode_date}"
+        unsubscribe_url = f"{site_url}/api/unsubscribe"
+
+        html = f"""\
+<div style="font-family: -apple-system, system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
+  <h2 style="color: #FF3621; margin: 0 0 16px;">Databricks Weekly</h2>
+  <p style="color: #333; line-height: 1.6;">
+    This week's digest is ready &mdash; covering the latest Databricks releases,
+    blog posts, and community highlights.
+  </p>
+  <a href="{episode_url}"
+     style="display: inline-block; margin: 24px 0; padding: 12px 28px;
+            background: #FF3621; color: white; text-decoration: none;
+            border-radius: 8px; font-weight: 600;">
+    Read This Week's Digest
+  </a>
+  <p style="color: #888; font-size: 13px; line-height: 1.5;">
+    You're receiving this because you subscribed at
+    <a href="{site_url}" style="color: #888;">{site_url}</a>.<br/>
+    <a href="{unsubscribe_url}" style="color: #888;">Unsubscribe</a>
+  </p>
+</div>"""
+
         if self.method == "gmail":
-            self._send_gmail(subject, body_html, attachments or [])
+            self._send_gmail(subject, html)
         elif self.method == "logic_app":
-            self._send_logic_app(subject, body_html)
+            self._send_logic_app(subject, html)
         else:
             raise ValueError(f"Unknown email method: {self.method}")
 
-    def _send_gmail(self, subject: str, body_html: str, attachments: list[Path]):
-        msg = MIMEMultipart()
-        msg["From"] = self.gmail_user
+    def _send_gmail(self, subject: str, body_html: str):
+        msg = MIMEMultipart("alternative")
+        msg["From"] = f'"Databricks Weekly" <{self.gmail_user}>'
         msg["To"] = ", ".join(self.recipients)
         msg["Subject"] = subject
-
         msg.attach(MIMEText(body_html, "html"))
-
-        for path in attachments:
-            if path.exists():
-                part = MIMEBase("application", "octet-stream")
-                part.set_payload(path.read_bytes())
-                encoders.encode_base64(part)
-                part.add_header("Content-Disposition", f"attachment; filename={path.name}")
-                msg.attach(part)
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(self.gmail_user, self.gmail_app_password)
