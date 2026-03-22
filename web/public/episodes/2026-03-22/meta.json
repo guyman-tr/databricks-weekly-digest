@@ -11,7 +11,7 @@
     "analytics": {
       "name": "Analytics & Data Science",
       "itemCount": 7,
-      "description": "Introducing AI Runtime: Scalable, Serverless NVIDIA GPUs on Databricks for Training and Finetuning, coSTAR: How We Ship AI Agents at Databricks Fast, Without Breaking Things, MLOps Frameworks: A Complete Guide to Tools and Platforms for Production ML",
+      "description": "Introducing AI Runtime: Scalable, Serverless NVIDIA GPUs on Databricks for Training and Finetuning, coSTAR: How We Ship AI Agents at Databricks Fast, Without Breaking Things, Semantic Layer Architecture: Components, Design Patterns, and AI Integration",
       "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-03-22/podcast-analytics.wav"
     }
   }
