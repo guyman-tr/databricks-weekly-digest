@@ -1,107 +1,121 @@
-Amir: Welcome back to Databricks Weekly: Data Engineering edition! I'm Amir, and as always, I'm joined by the ever-curious Dana.
+(Intro Music Fades)
 
-Dana: Always curious, never bored, especially with the pace of innovation at Databricks. We've got a jam-packed episode today, diving deep into some of the most impactful developments for data engineers from the last week. No marketing fluff, just the real deal.
+**Amir:** Welcome back to Databricks Weekly: Data Engineering! I'm Amir.
 
-Amir: That's right, Dana. We're sifting through the announcements to bring you what truly matters for your data pipelines, your architectures, and your sanity. And boy, do we have a big one to kick things off.
+**Dana:** And I'm Dana! We're here to dive into the most impactful Databricks developments from the last week, specifically for all you data engineers out there building the pipelines, managing the lakes, and making sure the data flows smoothly.
 
-Dana: I'm ready. Lay it on me, Amir.
+**Amir:** That's right, Dana. We've got a really exciting lineup this week with some developments that are genuinely game-changing for streaming, interoperability, and data sharing.
 
-Amir: Alright, so the headline grabber this week, and honestly, for good reason, is the **General Availability of Real-Time Mode for Apache Spark Structured Streaming on Databricks.**
+**Dana:** I'm ready! What's the biggest splash this week?
 
-Dana: Oh, that's actually huge. GA? Really? I remember hearing whispers about this, but GA means it's production-ready.
+---
 
-Amir: Exactly. GA isn't just a marketing term here; it means it's stable, fully supported, and ready for mission-critical workloads. For data engineers, this is a game-changer because it promises to significantly lower latency for real-time data ingestion and processing.
+**Amir:** Let's kick things off with something that many of our listeners have been eagerly awaiting: the **General Availability of Real-Time Mode for Apache Spark Structured Streaming on Databricks.**
 
-Dana: Lower latency how much? Like, from seconds to milliseconds? And what exactly *is* Real-Time Mode? Is it like a whole new API, or just an optimization under the hood?
+**Dana:** Oh, that's actually huge! GA means it's production-ready, right?
 
-Amir: Great questions. Traditionally, Structured Streaming operates in micro-batches. Even with very small batch intervals, you still have the overhead of batch processing – spinning up tasks, collecting data, processing, and then writing. Real-Time Mode essentially moves Structured Streaming from that micro-batch model to a continuous processing model for specific sources and sinks. Instead of polling for new data every few seconds, it keeps long-running tasks that continuously consume and process data.
+**Amir:** Absolutely. This isn't a public preview anymore; it's robust, fully supported, and ready for your most critical low-latency streaming workloads. For years, Structured Streaming has relied primarily on micro-batch processing, which is fantastic for its fault tolerance and scalability, but sometimes that sub-minute or even multi-second latency wasn't quite "real-time" enough for certain use cases.
 
-Dana: Wait, continuous processing? So it's not even micro-batches anymore? What does that mean for fault tolerance and exactly-once semantics? That's always been a huge selling point of Structured Streaming.
+**Dana:** So, what kind of latency are we talking about with this "real-time mode"? Are we talking true millisecond latency here, or still in the seconds range?
 
-Amir: Absolutely critical question, Dana. And the good news is that the core guarantees of Structured Streaming – fault tolerance and exactly-once processing – are maintained. It achieves this by carefully managing state and checkpoints, even in a continuous fashion. The shift is primarily in how data is ingested and processed internally, reducing the overhead associated with batching. In terms of latency, we're talking about moving from typical sub-second to a few-second latencies down to tens or even single-digit milliseconds for many common streaming patterns.
+**Amir:** We're generally talking sub-second latency now, often down to tens or hundreds of milliseconds. The key is that it achieves this by running queries continuously, without the overhead of restarting tasks or writing checkpoint information between every micro-batch. It maintains state in memory across batches, which significantly reduces the processing overhead.
 
-Dana: Tens of milliseconds for data processing on Spark? That's genuinely impressive. So, what kind of use cases are we really talking about here? Does this replace things like Kafka Streams or Flink for certain scenarios? Or is it more about optimizing existing Spark streaming jobs?
+**Dana:** Wait, really? So it's fundamentally changing how Structured Streaming executes? Does this mean we stop using micro-batches entirely?
 
-Amir: It’s a bit of both, but primarily it significantly elevates Structured Streaming’s capability to handle use cases that previously might have pushed users towards dedicated low-latency stream processing engines. Think real-time dashboards, immediate fraud detection, live anomaly detection in sensor data, interactive personalization engines. For many of these, the sub-second latency of micro-batch wasn’t quite fast enough without significant tuning headaches. Now, with Real-Time Mode, you can often achieve those ultra-low latencies directly within your familiar Spark ecosystem. It simplifies your architecture if you can consolidate on Spark.
+**Amir:** Not at all, Dana. Think of real-time mode as a specialized execution engine *within* Structured Streaming. Micro-batching is still the default and perfectly suitable for a vast majority of workloads where fault tolerance and throughput are prioritized over absolute minimal latency. Real-time mode is for those specific scenarios where every millisecond counts: think real-time fraud detection, immediate IoT sensor data processing, live operational dashboards, or even real-time personalization engines.
 
-Dana: Okay, so if I have existing Structured Streaming jobs running on Databricks, how hard is it to switch them to Real-Time Mode? Is it a flag flip, or a complete rewrite? What's the migration path like?
+**Dana:** Okay, so basically, if my dashboard needs to reflect events as they happen *right now*, or if an alert system needs to fire within a second of a condition being met, this is my go-to. What's the catch? Is it more resource-intensive?
 
-Amir: That's the beauty of it. For many existing Structured Streaming jobs, it's often a configuration change or a minor code adjustment. The API remains largely the same. You're typically enabling it on the `readStream` side, specifying a trigger type for continuous processing where applicable. Of course, the specific source and sink connectors need to support continuous processing, but Databricks is rolling this out for common ones like Kafka and Delta Lake. It's designed to be an evolution, not a revolution, for existing users.
+**Amir:** That's a sharp question, Dana. Yes, because it's running continuously and maintaining state in memory, it can be more resource-intensive than traditional micro-batching for the same throughput. You're trading off some resource efficiency for that drastically reduced latency. However, Databricks has put a lot of engineering into optimizing this, so it's not a runaway cost, but it's something to be aware of and monitor. The value proposition for truly real-time insights often outweighs the increased cost.
 
-Dana: That's reassuring. So basically, for any data engineer building new streaming pipelines or looking to optimize existing ones where latency is paramount, this is a mandatory investigation. It sounds like it removes one of the last major arguments for looking outside the Databricks Lakehouse Platform for very low-latency streaming.
+**Dana:** That makes sense. So, for data engineers, this means we now have a full spectrum: batch, micro-batch, and now true sub-second real-time streaming, all within the familiar Structured Streaming API. That's a huge simplification for building complex data platforms. No need to introduce entirely different streaming technologies for different latency needs.
 
-Amir: Precisely, Dana. It closes a significant gap and further solidifies Databricks as a unified platform for all data workloads, from batch to interactive SQL to ultra-low-latency streaming. It's a huge win for operational efficiency and simplifying the data engineering stack.
+**Amir:** Exactly. It lowers the cognitive load and operational complexity, allowing teams to leverage their existing Spark and Structured Streaming knowledge for a broader range of applications. It's a significant milestone for anyone building event-driven architectures on Databricks.
 
-Amir: Moving on from real-time processing, let's talk about something that's been a persistent challenge for data engineers: data interoperability and the "format wars." This week brought some significant advancements in **Delta Lake UniForm (Universal Format) support, specifically enhancing its capabilities for Iceberg and Hudi compatibility.**
+---
 
-Dana: Ah, UniForm! I remember when that was first announced, the idea of having one copy of data that could be read by Delta Lake, Iceberg, *and* Hudi engines was almost too good to be true. What are these new enhancements bringing to the table?
+**Dana:** Alright, Amir, what's next on the agenda? Something that keeps data engineers up at night is often data interoperability and avoiding vendor lock-in. Did anything pop up there?
 
-Amir: The initial UniForm release was fantastic, allowing Delta tables to be read as Iceberg and Hudi tables. But there were always nuances, particularly around schema evolution, advanced transactions, and certain metadata operations that weren't always perfectly aligned across all three. The latest enhancements focus on deepening that compatibility. We're seeing improved synchronization for schema changes, better support for features like column reordering and complex type evolution when viewing a Delta table through an Iceberg or Hudi lens, and more robust metadata consistency.
+**Amir:** You're spot on, Dana. And this next one directly addresses that: we have the **Public Preview of Delta Lake UniForm on Databricks**.
 
-Dana: So, if I'm understanding this, it's not just "readability" anymore, it's about making sure that the more complex operational aspects of each format are handled gracefully, even when you're looking at a Delta table from a different perspective?
+**Dana:** UniForm? Is that like "universal format"?
 
-Amir: Exactly. Think of it less as just a "read-only view" and more like a truly shared, universally addressable data asset. A data engineer using, say, a Trino cluster that prefers Iceberg can now interact with a Delta table with far greater confidence, knowing that schema updates from a Spark job writing to that Delta table will be reflected correctly and immediately in their Iceberg-compatible tooling. The goal is to minimize the friction points that previously made teams hesitant to fully embrace UniForm for critical pipelines.
+**Amir:** Precisely! UniForm stands for Universal Format. The core idea here is to solve the open table format fragmentation problem. In the data lakehouse world, we have Delta Lake, Apache Iceberg, Apache Hudi, each with their own strengths and ecosystems. UniForm allows you to write your data to Delta Lake and then have it simultaneously exposed as Iceberg and Hudi metadata.
 
-Dana: That's huge for breaking down silos, especially in larger organizations with diverse data ecosystems. Does this mean I can finally have a single "source of truth" table in Delta Lake, and my data science team can use tools that only speak Iceberg, while my legacy BI tools might prefer Hudi-compatible views, all without copying data or building complex sync pipelines?
+**Dana:** Wait, really? So I write my Delta tables, and then I can point an Iceberg reader at it, and it just works? Or a Hudi reader? That sounds like magic!
 
-Amir: Precisely, Dana. That's the holy grail UniForm is chasing, and these enhancements get us significantly closer. It means less data movement, fewer ETL jobs dedicated solely to format conversion, and a simplified data architecture. For a data engineer, it means less time managing format-specific quirks and more time focusing on actual data transformation and delivery. It also simplifies data sharing with external parties who might have different preferred open table formats.
+**Amir:** It's not magic, but it's close! When you enable UniForm on a Delta table, Databricks automatically generates and keeps synchronized the necessary Iceberg and Hudi metadata alongside your Delta Lake metadata. This means tools and engines that only understand Iceberg or Hudi can seamlessly query your Delta table without any data conversion or ETL process.
 
-Dana: Okay, so what are the practical implications for adoption? Are there still limitations? Like, can I write to an Iceberg table and have it reflected in Delta, or is it still primarily Delta-first with read-only compatibility for Iceberg/Hudi?
+**Dana:** So, for a data engineer, why would this matter? Does this mean I don't have to choose between Delta, Iceberg, or Hudi anymore? Or is it more about supporting existing tools?
 
-Amir: It's still primarily Delta-first. The magic of UniForm is that Delta Lake maintains the authoritative transaction log, and it *exposes* that information in Iceberg and Hudi compatible metadata. So, writes generally happen via Delta Lake. However, the enhanced compatibility means that if you *do* write to that table via Delta Lake, the downstream Iceberg or Hudi consumers will see those changes more reliably and with richer schema support than before. The vision is to reduce the need for *any* separate writes to other formats, because UniForm makes the Delta table itself universally accessible.
+**Amir:** It's primarily about expanding your ecosystem reach and flexibility. You still get the full benefits of Delta Lake – ACID transactions, schema enforcement, time travel, DLT pipelines, etc. – but now you can also serve data to consumers or tools that are locked into the Iceberg or Hudi ecosystems. Think about migrating workloads, integrating with third-party tools that only support Iceberg, or giving your data scientists the freedom to use their preferred engines without having to duplicate data. It means you can leverage Databricks' optimized Delta Lake engine for ingestion and transformation, and then use UniForm to serve that curated data to *any* open-source engine, regardless of its preferred table format.
 
-Dana: Got it. So it’s about making Delta Lake the universal language, and these updates just add more vocabulary and grammar rules to that language, making it easier for other dialects to understand. Less complexity, less boilerplate. That's a win for any DE team.
+**Dana:** That makes a lot of sense. So, say I have a specific BI tool that has fantastic integration with Iceberg but struggles with Delta, I can now just enable UniForm and point it at my Delta tables. What about performance? Is there an overhead for this metadata generation and synchronization?
 
-Amir: Absolutely. It simplifies governance, improves consistency, and ultimately makes data more accessible across an organization without sacrificing the performance and ACID guarantees of Delta Lake.
+**Amir:** That's a key question. The overhead is minimal. UniForm primarily manages metadata synchronization. It's not converting the underlying data files. The data itself remains in Parquet or ORC format, as Delta Lake stores it. The magic is in the metadata layer, translating Delta's transaction log into the respective Iceberg or Hudi metadata formats. So, query performance from an Iceberg or Hudi client perspective should be on par with querying native Iceberg or Hudi tables.
 
-Amir: Next up, let's talk about something that's becoming increasingly critical for data engineering teams: **data quality and observability.** This week saw the **General Availability of Databricks Lakehouse Monitoring for data quality and pipeline health.**
+**Dana:** Okay, so it's mostly about broadening access and compatibility without a major performance hit. This feels like a big step towards true vendor neutrality in the data lakehouse space, letting us pick the best tool for the job without getting bogged down in format conversions.
 
-Dana: Oh, this is fantastic news! I feel like we’ve been talking about the need for better data observability for ages. What exactly does Databricks Lakehouse Monitoring cover? Is it just basic data quality checks, or something more comprehensive?
+**Amir:** Exactly, Dana. It's a powerful move that underlines Databricks' commitment to open ecosystems while still providing the best-of-breed Delta Lake experience.
 
-Amir: It’s definitely more comprehensive than just basic checks. This GA release solidifies its capabilities across several key areas: data quality, schema evolution monitoring, and pipeline health. For data quality, it allows you to define expectations on your data – think null checks, uniqueness, range validity – and then automatically monitors these over time. But it goes beyond simple validation; it uses statistical profiling to detect anomalies, drift in distributions, and changes in cardinality, even without explicit rules.
+---
 
-Dana: So it's not just a pass/fail system; it's looking for subtle shifts that might indicate a problem before it blows up. That's smart. How does it handle schema changes? Because that’s a constant headache for any data engineer managing evolving data sources.
+**Amir:** Next up, let's talk about enhancing data productization and sharing, especially for our data engineering friends who are building those curated datasets for consumption. Databricks has announced **Databricks Marketplace support for Delta Sharing Live Tables.**
 
-Amir: Exactly. Schema drift is a nightmare. Lakehouse Monitoring actively tracks schema changes over time. It can alert you to new columns, dropped columns, data type changes, or even changes in column order. This is crucial for maintaining downstream pipeline stability and ensuring that your data contracts remain valid. You can configure alerts for these changes, giving you immediate visibility into potential breaking changes.
+**Dana:** Ooh, this sounds interesting. We've talked about Delta Sharing for a while, making it easy to share raw data across clouds and platforms. But "Live Tables" and "Marketplace" – that's a new combination. What's the story here?
 
-Dana: Okay, so it’s tracking data *and* schema. What about pipeline health? Does it tell me if my Spark jobs are slow, or if a particular stage is failing? How does it integrate with existing monitoring tools?
+**Amir:** The story is about moving beyond just sharing raw data. With this new capability, data providers can now share sophisticated data products – specifically, dbt models – as "Live Tables" through the Databricks Marketplace. This isn't Live Tables in the Delta Live Tables sense, but rather dynamically updated, curated views or tables derived from dbt models.
 
-Amir: For pipeline health, it integrates directly with Databricks Workflows and jobs. It can track job success rates, runtimes, and resource utilization, correlating these with data quality metrics. So, you can see not just *that* a data quality issue occurred, but *which pipeline run* likely introduced it. As for integration, it's built natively into the Databricks platform, leveraging Unity Catalog for metadata. You can view dashboards directly within Databricks, and it supports sending alerts to common notification services like Slack, PagerDuty, or custom webhooks. This means it can augment or feed into your existing observability stack rather than replacing it entirely.
+**Dana:** So this isn't just sharing raw Delta tables anymore? What's the big deal about sharing a *dbt model*? Why is that better than just sharing the final Delta table that the dbt model creates?
 
-Dana: That’s a relief. We don't want another siloed monitoring tool. So, as a data engineer, what's the setup effort like? Is it complex to configure all these monitors, or is it largely automated? I'm picturing hours of YAML files.
+**Amir:** That's a great question and gets to the heart of its significance. When you share a dbt model as a Live Table, you're not just sharing a static snapshot or a raw table. You're sharing a *living, breathing data product* that comes with all the logic, transformations, and potentially even documentation embedded within the dbt model itself. The consumer gets access to the *result* of that dbt model, which is always up-to-date as the provider runs their dbt pipelines.
 
-Amir: Good news there. It’s designed for ease of use. You can define monitoring configurations using SQL or Python APIs, or even through the UI. For common patterns, it can auto-suggest quality rules based on historical data. So, you start with sensible defaults and then fine-tune. The goal is to reduce the operational burden on DE teams, moving from reactive firefighting to proactive issue detection. Imagine catching a subtle data drift in your core fact table *before* it impacts downstream reports or machine learning models.
+**Dana:** Oh, I see! So, as a data product consumer, I'm not just getting a table; I'm getting a well-defined, professionally engineered dataset. This means better data quality, better understanding of the data's lineage, and less work for me to figure out what I'm looking at. What does this mean for data productization efforts within companies?
 
-Dana: That would be a dream. Less time chasing down bad data, more time building robust pipelines. It sounds like a significant step forward for the maturity of data operations on Databricks. So, GA means it's ready for prime time for critical production datasets?
+**Amir:** It's massive for data productization. It transforms the Marketplace from a place to share raw data assets into a hub for sharing *curated, production-grade data products*. Data engineers can build complex dbt models, apply all their data quality checks and transformations, and then expose that finished product directly to internal or external consumers via the Marketplace. This drastically simplifies the consumption experience, as the consumers don't need to understand the underlying raw data or transformation logic; they just consume the finished product.
 
-Amir: Absolutely. GA means it’s fully supported and robust enough for those critical datasets where data quality directly impacts business outcomes. It’s a core component of building a truly reliable and trustworthy Lakehouse.
+**Dana:** And what about governance? Sharing dbt models sounds powerful, but how do we ensure the right people see the right data with the right access controls?
 
-Amir: For our final topic today, let's talk about the continued evolution of Databricks' compute strategy, specifically with **significant updates to the Serverless DBU pricing model and expanded region availability for Databricks Workflows and SQL.**
+**Amir:** That's where Delta Sharing's robust governance comes in. Even though you're sharing a dbt model's output, all the underlying Delta Sharing security features apply. You can enforce row-level and column-level access controls, track who is accessing what, and manage permissions centrally. This combination of powerful data product definition via dbt and secure, governed distribution via Delta Sharing and Marketplace is incredibly potent. It truly elevates the "data as a product" paradigm.
 
-Dana: Serverless is a buzzword that gets thrown around a lot. What do these updates actually mean for data engineers and our budgets? Is it truly "serverless" in the sense of no infrastructure management, and are the cost savings real?
+**Dana:** This sounds like it could be a real game-changer for companies trying to monetize their data or just improve internal data discovery and consumption. It’s moving towards a more API-like experience for data, which is something we've been wanting for a long time.
 
-Amir: Excellent questions, Dana. Firstly, yes, it gets us closer to true serverless for many workloads. For Databricks SQL and Workflows, "serverless" means Databricks manages the entire compute infrastructure – provisioning, scaling, patching, and even shutdown – completely transparently. You don't pick instance types, you don't manage clusters. You just specify your task, and it runs. This drastically reduces operational overhead for data engineers.
+---
 
-Dana: That's the dream: less ops, more engineering. But the pricing model... that's where the rubber meets the road. What's changed with the DBU pricing? Is it more predictable now?
+**Amir:** For our final topic today, let's turn our attention to the foundational layer of the lakehouse: Delta Lake itself. We've seen the release of **Delta Lake 3.2.0**.
 
-Amir: That's a key part of the update. Databricks has been working to make Serverless DBU pricing more transparent and, crucially, more granular. The updates focus on clearer cost attribution per workload type and more efficient resource utilization that translates into lower DBU consumption for many common operations, especially for short-lived or bursty tasks. This means a more predictable cost structure, which is vital for budget planning and showing ROI for serverless adoption. They're trying to optimize the underlying resource allocation such that you're only paying for the exact compute you need, when you need it, down to very fine-grained intervals.
+**Dana:** Ah, a new Delta Lake version! Always exciting. Are there any particular features in this release that data engineers should really pay attention to? Anything that will make our lives easier or our pipelines faster?
 
-Dana: Okay, so for things like quick SQL queries or small ETL jobs in a workflow, where spinning up a cluster might be overkill and costly due to minimum runtimes, this sounds like a perfect fit. What about larger, long-running jobs? Does serverless make sense there too, or are we still better off with provisioned clusters?
+**Amir:** Absolutely. There are several improvements, but for data engineers, I'd highlight three areas: enhanced CDC capabilities, further performance optimizations, and improved Flink integration.
 
-Amir: For very large, long-running, or highly customized Spark jobs, provisioned clusters still offer the highest degree of control and often cost optimization if you can effectively manage them. However, for the vast majority of SQL analytics, dashboarding, and many data ingestion/transformation tasks within Databricks Workflows, Serverless compute is becoming increasingly compelling. The updates also focus on improving performance and stability for these medium-to-large workloads in a serverless context, blurring that line further. The expanded region availability also means more teams globally can now leverage these benefits, reducing latency and data transfer costs by running compute closer to their data.
+**Dana:** CDC improvements are always welcome – what specifically is better in 3.2.0? Does this make CDC easier to implement generally, or is it specific to certain patterns?
 
-Dana: That's a big deal for global enterprises. So, if I'm migrating pipelines to Databricks, or just building new ones, when should I default to serverless versus traditional clusters? What's the new mental model for a data engineer?
+**Amir:** The CDC capabilities have been refined, particularly around `MERGE INTO` and `UPDATE` operations. It provides more robust and efficient handling of change data capture for complex merge patterns, which can often be tricky to manage. This can simplify how you build and maintain your CDC pipelines, especially those dealing with frequent updates or deletions, making them more resilient and easier to reason about. It means less custom logic and more reliance on the native Delta Lake features.
 
-Amir: My recommendation for the new mental model is to *start* with serverless for most new Databricks SQL and Databricks Workflows tasks. Only consider provisioned clusters if you encounter specific performance bottlenecks, highly specialized requirements, or a proven cost inefficiency that serverless can't address. The operational simplicity alone is often worth the premium, if any, and with these pricing updates, that premium is shrinking. For new initiatives or teams looking to reduce their operational burden, serverless is now the clear front-runner. It frees up data engineers to focus on data, not infrastructure.
+**Dana:** That's a relief, complex merges are often where things go sideways. You also mentioned performance optimizations. Any specific examples that data engineers should look out for?
 
-Dana: Fewer clusters to babysit, more time for actual data engineering. That sounds like a solid win to me. This has been a really impactful week for data engineers on Databricks.
+**Amir:** Yes! There are improvements around predicate pushdown for `DELETE` operations, which can significantly speed up deletes on large tables by reducing the amount of data scanned. Also, enhancements to Z-ordering and data skipping, making queries on highly organized tables even faster. So, if you're already doing Z-ordering, you might see an immediate, passive benefit from the upgrade.
 
-Amir: It certainly has, Dana. From ultra-low latency streaming to universal data access, robust data quality, and simplified compute, Databricks is clearly pushing the envelope on every front that matters to data engineers.
+**Dana:** Nice, free performance boosts are always appreciated! And what about Flink integration? Is that for specific use cases or a general enhancement?
 
-Dana: Absolutely. It's exciting to see these features mature and become generally available. It means practitioners can actually start using them for real-world problems today.
+**Amir:** The Flink integration is definitely a general enhancement, but particularly beneficial for those already using or considering Flink for their ultra-low-latency stream processing. Delta Lake 3.2.0 brings improved Flink source and sink connectors, making it more seamless to integrate Delta Lake with Flink pipelines. This means you can use Flink to ingest data into Delta Lake or read from Delta Lake to feed Flink applications with greater efficiency and reliability. It broadens the options for real-time architectures within the lakehouse.
 
-Amir: That's our goal every week: to give you the insights you need to build better, faster, and more reliable data solutions. That's all the time we have for this episode of Databricks Weekly: Data Engineering.
+**Dana:** Okay, so for data engineers, this release means potentially simpler CDC logic, faster operations on certain types of queries, and better integration with Flink for those pushing the boundaries of real-time streaming. Any breaking changes or major considerations when upgrading to 3.2.0?
 
-Dana: Thanks for tuning in! We'll be back next week with more developments.
+**Amir:** As always with any major version update, it's wise to test in a non-production environment first. However, Delta Lake prides itself on backward compatibility, so critical breaking changes are usually minimal and well-documented. The general advice is to review the release notes carefully, but you should find it to be a relatively smooth upgrade path, bringing those new features and performance gains with it.
 
-Amir: Until then, keep building those pipelines!
+---
+
+**Amir:** And that brings us to the end of another packed episode of Databricks Weekly: Data Engineering!
+
+**Dana:** Wow, what a week! Real-time mode hitting GA, UniForm promising true interoperability, dbt models as sharable data products, and Delta Lake itself getting even better. It feels like Databricks is really delivering on the promise of a truly integrated and powerful lakehouse platform.
+
+**Amir:** Couldn't agree more, Dana. It's an exciting time to be a data engineer on Databricks.
+
+**Dana:** Definitely! Thanks for breaking it all down for us, Amir.
+
+**Amir:** My pleasure, Dana. And thank you all for tuning in. We'll be back next week with more Databricks developments.
+
+**Dana:** Until then, keep building those pipelines!
+
+(Outro Music Begins)
