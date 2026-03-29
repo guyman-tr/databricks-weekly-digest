@@ -1,0 +1,18 @@
+{
+  "title": "Databricks Weekly - 2026-03-29",
+  "date": "2026-03-29",
+  "tracks": {
+    "de": {
+      "name": "Data Engineering",
+      "itemCount": 1,
+      "description": "Zero-Downtime Patching in Lakebase Part 1: Prewarming",
+      "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-03-29/podcast-de.wav"
+    },
+    "analytics": {
+      "name": "Analytics & Data Science",
+      "itemCount": 5,
+      "description": "Building an A/B testing analysis framework for mobile gaming on Databricks, What is Intelligent Document Processing?, Fizz accelerates ecommerce analytics with Databricks SQL",
+      "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-03-29/podcast-analytics.wav"
+    }
+  }
+}
