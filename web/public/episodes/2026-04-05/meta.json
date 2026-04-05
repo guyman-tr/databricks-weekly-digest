@@ -1,0 +1,18 @@
+{
+  "title": "Databricks Weekly - 2026-04-05",
+  "date": "2026-04-05",
+  "tracks": {
+    "de": {
+      "name": "Data Engineering",
+      "itemCount": 1,
+      "description": "Unity Catalog Business Semantics Now Generally Available and Open Source",
+      "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-04-05/podcast-de.wav"
+    },
+    "analytics": {
+      "name": "Analytics & Data Science",
+      "itemCount": 1,
+      "description": "Announcing General Availability and Open Sourcing of Unity Catalog Business Semantics",
+      "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-04-05/podcast-analytics.wav"
+    }
+  }
+}
