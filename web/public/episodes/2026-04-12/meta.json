@@ -1,0 +1,17 @@
+{
+  "title": "Databricks Weekly - 2026-04-12",
+  "date": "2026-04-12",
+  "tracks": {
+    "de": {
+      "name": "Data Engineering",
+      "itemCount": 1,
+      "description": "The Next Era of the Open Lakehouse: Apache Iceberg\u2122 v3 in Public Preview on Databricks"
+    },
+    "analytics": {
+      "name": "Analytics & Data Science",
+      "itemCount": 1,
+      "description": "Memory Scaling for AI Agents",
+      "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-04-12/podcast-analytics.wav"
+    }
+  }
+}
