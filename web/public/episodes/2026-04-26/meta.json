@@ -1,0 +1,18 @@
+{
+  "title": "Databricks Weekly - 2026-04-26",
+  "date": "2026-04-26",
+  "tracks": {
+    "de": {
+      "name": "Data Engineering",
+      "itemCount": 1,
+      "description": "Announcing the Public Preview of Lakeflow Designer",
+      "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-04-26/podcast-de.wav"
+    },
+    "analytics": {
+      "name": "Analytics & Data Science",
+      "itemCount": 7,
+      "description": "OpenAI GPT-5.5 + Codex, now available and fully-governed in Databricks (and the partnership behind it!), How to transform document activation workflows with Genie and Agent Bricks, How conversational analytics removes the BI bottleneck",
+      "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-04-26/podcast-analytics.wav"
+    }
+  }
+}
