@@ -1,0 +1,18 @@
+{
+  "title": "Databricks Weekly - 2026-05-03",
+  "date": "2026-05-03",
+  "tracks": {
+    "de": {
+      "name": "Data Engineering",
+      "itemCount": 1,
+      "description": "Unlocking SAP Business Context in Databricks with Semantic Metadata Delta Sharing",
+      "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-05-03/podcast-de.wav"
+    },
+    "analytics": {
+      "name": "Analytics & Data Science",
+      "itemCount": 1,
+      "description": "Leading Data Teams In The Age Of AI",
+      "audioUrl": "https://pub-4687e45a29f440fb98541ce01a3d7f25.r2.dev/episodes/2026-05-03/podcast-analytics.wav"
+    }
+  }
+}
